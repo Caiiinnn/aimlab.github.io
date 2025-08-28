@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Click the Circle Game</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      background: linear-gradient(270deg, #89f7fe, #66a6ff, #89f7fe, #66a6ff);
+      background-size: 800% 800%;
+      animation: gradientAnimation 15s ease infinite;
+    }
+
+    @keyframes gradientAnimation {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    #game-container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+    }
+
+    #circle {
+      width: 50px;
+      height: 50px;
+      background-color: rgba(206, 0, 0, 0.85);
+      border-radius: 50%;
+      position: absolute;
+      cursor: pointer;
+      transition: top 0.2s, left 0.2s;
+    }
+
+    #scoreboard {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      font-size: 20px;
+      background: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    #start-btn {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      font-size: 18px;
+      padding: 10px 15px;
+      background: green;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #game-over {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 32px;
+      display: none;
+      text-align: center;
+      color: #333;
+      white-space: pre-line;
+    }
+
+    @keyframes pop {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.5);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .pop {
+      animation: pop 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="game-container">
+    <div id="scoreboard">Accuracy: 0 | Time: 60</div>
+    <button id="start-btn">Start Game</button>
+    <div id="circle" style="display:none;"></div>
+    <div id="game-over"></div>
+  </div>
+
+  <script>
+    const circle = document.getElementById('circle');
+    const scoreboard = document.getElementById('scoreboard');
+    const startBtn = document.getElementById('start-btn');
+    const gameOverDisplay = document.getElementById('game-over');
+
+    let accuracy = 0;
+    let timeLeft = 60;
+    let timerInterval;
+
+    function getRandomPosition() {
+      const container = document.getElementById('game-container');
+      const maxX = container.clientWidth - circle.offsetWidth;
+      const maxY = container.clientHeight - circle.offsetHeight;
+      const x = Math.floor(Math.random() * maxX);
+      const y = Math.floor(Math.random() * maxY);
+      return { x, y };
+    }
+
+    function moveCircle() {
+      const pos = getRandomPosition();
+      circle.style.left = pos.x + 'px';
+      circle.style.top = pos.y + 'px';
+    }
+
+    function startGame() {
+      accuracy = 0;
+      timeLeft = 60;
+      scoreboard.textContent = `Accuracy: ${accuracy} | Time: ${timeLeft}`;
+      circle.style.display = 'block';
+      gameOverDisplay.style.display = 'none';
+      startBtn.disabled = true;
+
+      moveCircle();
+
+      circle.onclick = () => {
+        accuracy++;
+        scoreboard.textContent = `Accuracy: ${accuracy} | Time: ${timeLeft}`;
+
+        // Add 'pop' animation class
+        circle.classList.add('pop');
+
+        // Remove the class after animation ends so it can be triggered again
+        circle.addEventListener('animationend', () => {
+          circle.classList.remove('pop');
+        }, { once: true });
+
+        moveCircle();
+      };
+
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        scoreboard.textContent = `Accuracy: ${accuracy} | Time: ${timeLeft}`;
+        if (timeLeft <= 0) {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      clearInterval(timerInterval);
+      circle.style.display = 'none';
+      gameOverDisplay.style.display = 'block';
+      gameOverDisplay.textContent = `Game Over!\nYour accuracy: ${accuracy}`;
+      startBtn.disabled = false;
+    }
+
+    startBtn.addEventListener('click', startGame);
+  </script>
+</body>
+</html>
